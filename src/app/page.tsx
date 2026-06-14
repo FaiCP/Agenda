@@ -1,65 +1,129 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  CalendarDays,
+  FolderOpen,
+  Globe,
+  BellRing,
+  Users,
+  ShieldCheck,
+} from "lucide-react";
+import { VERTICALS } from "@/lib/verticals";
 
-export default function Home() {
+const FEATURES = [
+  {
+    icon: CalendarDays,
+    title: "Agenda inteligente",
+    description:
+      "Calendario por profesional con citas, reagendados y control de estados.",
+  },
+  {
+    icon: Globe,
+    title: "Reservas online",
+    description:
+      "Tu propia página pública para que tus pacientes o clientes agenden solos, 24/7.",
+  },
+  {
+    icon: FolderOpen,
+    title: "Expedientes digitales",
+    description:
+      "Historias clínicas, expedientes legales o fichas de tratamiento según tu profesión.",
+  },
+  {
+    icon: BellRing,
+    title: "Recordatorios automáticos",
+    description: "Reduce inasistencias con recordatorios por correo.",
+  },
+  {
+    icon: Users,
+    title: "Equipo y roles",
+    description:
+      "Profesionales y recepción con permisos separados en una sola cuenta.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Datos protegidos",
+    description:
+      "Aislamiento por organización y cifrado en reposo para datos sensibles.",
+  },
+];
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex min-h-screen flex-col">
+      <header className="border-b">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <CalendarDays className="h-5 w-5 text-primary" />
+            AgendaPro
+          </Link>
+          <nav className="flex items-center gap-2">
+            <Button variant="ghost" asChild>
+              <Link href="/precios">Precios</Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/login">Iniciar sesión</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/registro">Crear cuenta gratis</Link>
+            </Button>
+          </nav>
+        </div>
+      </header>
+
+      <main className="flex-1">
+        <section className="mx-auto w-full max-w-6xl px-4 py-20 text-center">
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+            Citas y expedientes de tu consulta, en un solo lugar
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            Para médicos, abogados, psicólogos, odontólogos y todo profesional
+            que atiende con cita. Agenda online, expedientes digitales y
+            recordatorios automáticos.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <div className="mt-8 flex justify-center gap-3">
+            <Button size="lg" asChild>
+              <Link href="/registro">Comenzar gratis</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/precios">Ver planes</Link>
+            </Button>
+          </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-2 text-sm text-muted-foreground">
+            {Object.values(VERTICALS).map((v) => (
+              <span key={v.label} className="rounded-full border px-3 py-1">
+                {v.icon} {v.label}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-t bg-muted/40">
+          <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-16 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <Card key={f.title}>
+                <CardHeader>
+                  <f.icon className="h-8 w-8 text-primary" />
+                  <CardTitle className="mt-2">{f.title}</CardTitle>
+                  <CardDescription>{f.description}</CardDescription>
+                </CardHeader>
+                <CardContent />
+              </Card>
+            ))}
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t py-6 text-center text-sm text-muted-foreground">
+        AgendaPro — Hecho para profesionales en Ecuador 🇪🇨
+      </footer>
     </div>
   );
 }
