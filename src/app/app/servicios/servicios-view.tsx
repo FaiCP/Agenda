@@ -55,28 +55,40 @@ export function ServiciosView({ services }: { services: Service[] }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Servicios</h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            Servicios
+          </h1>
           <p className="text-muted-foreground">
             Lo que ofreces y puede reservarse.
           </p>
         </div>
         <Button onClick={openNew}>
-          <Plus className="mr-1 h-4 w-4" /> Nuevo servicio
+          <Plus className="mr-1 size-4" /> Nuevo servicio
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="overflow-x-auto rounded-xl border bg-card">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Duración</TableHead>
-              <TableHead>Precio</TableHead>
-              <TableHead>Reserva online</TableHead>
-              <TableHead>Activo</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Nombre
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Duración
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Precio
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Reserva online
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Activo
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -93,12 +105,23 @@ export function ServiciosView({ services }: { services: Service[] }) {
             )}
             {services.map((s) => (
               <TableRow key={s.id}>
-                <TableCell className="font-medium">{s.name}</TableCell>
-                <TableCell>{s.duration_minutes} min</TableCell>
-                <TableCell>${Number(s.price).toFixed(2)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <span className="h-8 w-1 shrink-0 rounded-full bg-primary" />
+                    <span className="font-medium">{s.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {s.duration_minutes} min
+                </TableCell>
+                <TableCell className="whitespace-nowrap font-semibold text-primary">
+                  ${Number(s.price).toFixed(2)}
+                </TableCell>
                 <TableCell>
                   {s.allow_public_booking ? (
-                    <Badge variant="secondary">Sí</Badge>
+                    <Badge className="border-transparent bg-emerald-50 text-emerald-700">
+                      Sí
+                    </Badge>
                   ) : (
                     <Badge variant="outline">No</Badge>
                   )}
@@ -111,7 +134,7 @@ export function ServiciosView({ services }: { services: Service[] }) {
                 </TableCell>
                 <TableCell>
                   <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
-                    <Pencil className="h-4 w-4" />
+                    <Pencil className="size-4" />
                   </Button>
                 </TableCell>
               </TableRow>

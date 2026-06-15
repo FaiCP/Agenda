@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, UserPlus, Users, Phone } from "lucide-react";
 import { upsertClient } from "@/lib/actions/clients";
 import type { ActionState } from "@/lib/actions/appointments";
 import type { Tables } from "@/lib/supabase/database.types";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -28,60 +30,86 @@ import {
 
 type Client = Tables<"clients">;
 
+interface Stats {
+  total: number;
+  newThisMonth: number;
+  withPhone: number;
+}
+
 const initialState: ActionState = { error: null };
+
+function initials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 export function ClientesView({
   clients,
   clientLabel,
   q,
+  stats,
 }: {
   clients: Client[];
   clientLabel: string;
   q: string;
+  stats: Stats;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold capitalize">
+          <h1 className="font-heading text-2xl font-semibold capitalize tracking-tight">
             {clientLabel}s
           </h1>
           <p className="text-muted-foreground">
             Directorio y acceso a expedientes.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="mr-1 h-4 w-4" /> Nuevo {clientLabel}
-        </Button>
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <form
+            className="relative min-w-0 flex-1 sm:w-72 sm:flex-none"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const value = new FormData(e.currentTarget).get("q");
+              router.push(
+                `/app/clientes?q=${encodeURIComponent(String(value ?? ""))}`
+              );
+            }}
+          >
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              name="q"
+              defaultValue={q}
+              placeholder="Buscar por nombre, correo o cédula…"
+              className="pl-9"
+            />
+          </form>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="mr-1 size-4" /> Nuevo {clientLabel}
+          </Button>
+        </div>
       </div>
 
-      <form
-        className="relative max-w-sm"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const value = new FormData(e.currentTarget).get("q");
-          router.push(`/app/clientes?q=${encodeURIComponent(String(value ?? ""))}`);
-        }}
-      >
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          name="q"
-          defaultValue={q}
-          placeholder="Buscar por nombre, correo o cédula…"
-          className="pl-8"
-        />
-      </form>
-
-      <div className="rounded-lg border">
+      <div className="overflow-hidden rounded-xl border bg-card">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Contacto</TableHead>
-              <TableHead>Cédula / ID</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Nombre
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Contacto
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Cédula / ID
+              </TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -100,7 +128,16 @@ export function ClientesView({
             )}
             {clients.map((c) => (
               <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.full_name}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-accent text-xs font-medium text-accent-foreground">
+                        {initials(c.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{c.full_name}</span>
+                  </div>
+                </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {[c.email, c.phone].filter(Boolean).join(" · ") || "—"}
                 </TableCell>
@@ -116,6 +153,20 @@ export function ClientesView({
         </Table>
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          icon={UserPlus}
+          label="Nuevos este mes"
+          value={`+${stats.newThisMonth}`}
+        />
+        <StatCard icon={Users} label="Total de registros" value={stats.total} />
+        <StatCard
+          icon={Phone}
+          label="Con teléfono"
+          value={stats.withPhone}
+        />
+      </div>
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -125,6 +176,30 @@ export function ClientesView({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="font-heading text-xl font-semibold">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

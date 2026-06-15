@@ -64,15 +64,18 @@ export default function HomePage() {
             <CalendarDays className="h-5 w-5 text-primary" />
             AgendaPro
           </Link>
-          <nav className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Button variant="ghost" className="hidden sm:inline-flex" asChild>
               <Link href="/precios">Precios</Link>
             </Button>
             <Button variant="ghost" asChild>
               <Link href="/login">Iniciar sesión</Link>
             </Button>
             <Button asChild>
-              <Link href="/registro">Crear cuenta gratis</Link>
+              <Link href="/registro">
+                <span className="sm:hidden">Crear cuenta</span>
+                <span className="hidden sm:inline">Crear cuenta gratis</span>
+              </Link>
             </Button>
           </nav>
         </div>
@@ -80,7 +83,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         <section className="mx-auto w-full max-w-6xl px-4 py-20 text-center">
-          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="mx-auto max-w-3xl font-heading text-4xl font-bold tracking-tight sm:text-5xl">
             Citas y expedientes de tu consulta, en un solo lugar
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">

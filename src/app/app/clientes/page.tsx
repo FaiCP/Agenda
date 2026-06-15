@@ -27,13 +27,33 @@ export default async function ClientesPage({
     );
   }
 
-  const { data: clients } = await query;
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const base = () =>
+    supabase
+      .from("clients")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organization.id);
+
+  const [{ data: clients }, totalRes, newRes, phoneRes] = await Promise.all([
+    query,
+    base(),
+    base().gte("created_at", monthStart.toISOString()),
+    base().not("phone", "is", null),
+  ]);
 
   return (
     <ClientesView
       clients={clients ?? []}
       clientLabel={organization.client_label}
       q={q ?? ""}
+      stats={{
+        total: totalRes.count ?? 0,
+        newThisMonth: newRes.count ?? 0,
+        withPhone: phoneRes.count ?? 0,
+      }}
     />
   );
 }

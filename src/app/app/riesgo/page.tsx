@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { AlertTriangle, Sparkles, Info, MessageCircle, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getOrgContext } from "@/lib/get-org";
 import { orgHasFeature } from "@/lib/features";
 import { rankClientRisks } from "@/lib/churn";
 import { formatDateShort } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -25,6 +25,20 @@ import {
 } from "@/components/ui/table";
 
 export const metadata: Metadata = { title: "Riesgo de abandono" };
+
+function initials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function lastVisitLabel(daysSince: number) {
+  const ms = Date.now() - daysSince * 24 * 60 * 60 * 1000;
+  return formatDateShort(new Date(ms).toISOString());
+}
 
 export default async function RiesgoPage() {
   const { organization } = await getOrgContext();
@@ -69,16 +83,61 @@ export default async function RiesgoPage() {
   );
 
   const altos = risks.filter((r) => r.level === "alto").length;
+  const medios = risks.length - altos;
+  const labelCap =
+    organization.client_label.charAt(0).toUpperCase() +
+    organization.client_label.slice(1);
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Riesgo de abandono</h1>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+          Riesgo de abandono
+        </h1>
         <p className="text-muted-foreground">
-          {risks.length === 0
-            ? `Ningún ${organization.client_label} en riesgo detectado.`
-            : `${risks.length} ${organization.client_label}s en riesgo · ${altos} con riesgo alto`}
+          Mantén a tus {organization.client_label}s comprometidos con
+          recordatorios oportunos.
         </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-[280px_1fr]">
+        <Card>
+          <CardContent className="space-y-4 p-5">
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                <AlertTriangle className="size-5" />
+              </span>
+              <p className="font-heading text-lg font-semibold">Resumen</p>
+            </div>
+            <div className="space-y-1">
+              <ResumenRow
+                label={`${labelCap}s en riesgo`}
+                value={risks.length}
+              />
+              <ResumenRow label="Riesgo alto" value={altos} dot="bg-red-500" />
+              <ResumenRow
+                label="Riesgo medio"
+                value={medios}
+                dot="bg-amber-500"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="rounded-xl border border-primary/20 bg-accent p-5">
+          <div className="flex items-center gap-2 text-accent-foreground">
+            <Info className="size-4" />
+            <p className="font-heading text-sm font-semibold uppercase tracking-wide">
+              Metodología de riesgo
+            </p>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            El score se calcula con un modelo basado en inasistencias,
+            cancelaciones y el tiempo transcurrido desde la última visita en
+            relación a la frecuencia habitual de cada {organization.client_label}.
+            No usa datos externos: las reglas son explicables.
+          </p>
+        </div>
       </div>
 
       {risks.length === 0 ? (
@@ -92,59 +151,68 @@ export default async function RiesgoPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              {organization.client_label.charAt(0).toUpperCase() +
-                organization.client_label.slice(1)}
-              s por contactar
+            <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {labelCap}s por contactar
             </CardTitle>
             <CardDescription>
               Score calculado con inasistencias, cancelaciones y tiempo sin
               volver respecto a su frecuencia habitual de visita.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Riesgo</TableHead>
-                  <TableHead className="hidden md:table-cell">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Nombre
+                  </TableHead>
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Riesgo
+                  </TableHead>
+                  <TableHead className="hidden text-xs font-medium uppercase tracking-wide text-muted-foreground md:table-cell">
                     Motivos y acción sugerida
                   </TableHead>
-                  <TableHead className="text-right">Contacto</TableHead>
+                  <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Contacto
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {risks.map((r) => (
                   <TableRow key={r.clientId}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/app/clientes/${r.clientId}`}
-                        className="hover:underline"
-                      >
-                        {r.fullName}
-                      </Link>
-                      {r.daysSinceLastVisit !== null && (
-                        <p className="text-xs text-muted-foreground">
-                          Última visita:{" "}
-                          {formatDateShort(
-                            new Date(
-                              Date.now() -
-                                r.daysSinceLastVisit * 24 * 60 * 60 * 1000
-                            ).toISOString()
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback className="bg-accent text-xs font-medium text-accent-foreground">
+                            {initials(r.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/app/clientes/${r.clientId}`}
+                            className="font-medium hover:underline"
+                          >
+                            {r.fullName}
+                          </Link>
+                          {r.daysSinceLastVisit !== null && (
+                            <p className="text-xs text-muted-foreground">
+                              Última visita: {lastVisitLabel(r.daysSinceLastVisit)}
+                            </p>
                           )}
-                        </p>
-                      )}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          r.level === "alto" ? "destructive" : "secondary"
+                      <span
+                        className={
+                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold " +
+                          (r.level === "alto"
+                            ? "bg-red-50 text-red-700"
+                            : "bg-amber-50 text-amber-700")
                         }
                       >
                         {r.level === "alto" ? "Alto" : "Medio"} · {r.score}
-                      </Badge>
+                      </span>
                     </TableCell>
                     <TableCell className="hidden max-w-md whitespace-normal md:table-cell">
                       <ul className="list-disc pl-4 text-xs text-muted-foreground">
@@ -158,26 +226,37 @@ export default async function RiesgoPage() {
                         </p>
                       )}
                     </TableCell>
-                    <TableCell className="text-right text-xs">
-                      {r.phone && (
-                        <a
-                          className="block hover:underline"
-                          href={`https://wa.me/${r.phone.replace(/\D/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          WhatsApp
-                        </a>
-                      )}
-                      {r.email && (
-                        <a
-                          className="block hover:underline"
-                          href={`mailto:${r.email}`}
-                        >
-                          {r.email}
-                        </a>
-                      )}
-                      {!r.phone && !r.email && "—"}
+                    <TableCell className="text-right">
+                      <div className="flex flex-col items-end gap-1">
+                        {r.phone && (
+                          <Button
+                            size="sm"
+                            asChild
+                            className="border-transparent bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                          >
+                            <a
+                              href={`https://wa.me/${r.phone.replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle className="mr-1 size-3.5" />
+                              WhatsApp
+                            </a>
+                          </Button>
+                        )}
+                        {r.email && (
+                          <a
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:underline"
+                            href={`mailto:${r.email}`}
+                          >
+                            <Mail className="size-3" />
+                            {r.email}
+                          </a>
+                        )}
+                        {!r.phone && !r.email && (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -186,6 +265,26 @@ export default async function RiesgoPage() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+function ResumenRow({
+  label,
+  value,
+  dot,
+}: {
+  label: string;
+  value: number;
+  dot?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b py-2 last:border-0">
+      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        {dot && <span className={`size-2 rounded-full ${dot}`} />}
+        {label}
+      </span>
+      <span className="font-heading text-lg font-semibold">{value}</span>
     </div>
   );
 }

@@ -85,6 +85,10 @@ export function BookingFlow({
   }, [slug, serviceId, professionalId, date]);
 
   useEffect(() => {
+    // Sincroniza los horarios con el backend al cambiar servicio, profesional
+    // o fecha. El estado de carga se marca de forma intencional para mostrar el
+    // skeleton mientras llega la respuesta.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadSlots();
   }, [loadSlots]);
 

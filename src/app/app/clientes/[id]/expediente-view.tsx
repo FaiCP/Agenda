@@ -28,6 +28,7 @@ import { APPOINTMENT_STATUS_LABELS } from "@/lib/verticals";
 import { formatDateShort, formatTime } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -75,6 +76,15 @@ interface AppointmentRow {
 
 const initialState: ActionState = { error: null };
 
+function initials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function ExpedienteView({
   client,
   clientLabel,
@@ -118,36 +128,53 @@ export function ExpedienteView({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/app/clientes">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold">{client.full_name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {[client.email, client.phone, client.document_id]
-                .filter(Boolean)
-                .join(" · ") || `Sin datos de contacto`}
-            </p>
+      <Link
+        href="/app/clientes"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Expediente del {clientLabel}
+      </Link>
+
+      <Card>
+        <CardContent className="flex flex-wrap items-start justify-between gap-4 p-5">
+          <div className="flex min-w-0 items-center gap-4">
+            <Avatar size="lg" className="size-14">
+              <AvatarFallback className="bg-accent text-base font-semibold text-accent-foreground">
+                {initials(client.full_name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-heading text-2xl font-semibold tracking-tight">
+                  {client.full_name}
+                </h1>
+                <Badge className="border-transparent bg-emerald-50 text-emerald-700">
+                  Activo
+                </Badge>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {[client.email, client.phone, client.document_id]
+                  .filter(Boolean)
+                  .join(" · ") || "Sin datos de contacto"}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setEditOpen(true)}>
-            <Pencil className="mr-1 h-4 w-4" /> Editar datos
-          </Button>
-          {aiEnabled && documentTypes.length > 0 && (
-            <Button variant="outline" onClick={() => setDocOpen(true)}>
-              <FileText className="mr-1 h-4 w-4" /> Generar documento
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setEditOpen(true)}>
+              <Pencil className="mr-1 size-4" /> Editar datos
             </Button>
-          )}
-          <Button onClick={() => setEntryOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" /> Nueva entrada
-          </Button>
-        </div>
-      </div>
+            {aiEnabled && documentTypes.length > 0 && (
+              <Button variant="outline" onClick={() => setDocOpen(true)}>
+                <FileText className="mr-1 size-4" /> Generar documento
+              </Button>
+            )}
+            <Button onClick={() => setEntryOpen(true)}>
+              <Plus className="mr-1 size-4" /> Nueva entrada
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {aiEnabled && (
         <ConsultationRecorder
@@ -679,14 +706,28 @@ function ConsultationRecorder({
 
   if (status === "idle")
     return (
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed p-3">
-        <Button type="button" variant="secondary" onClick={start}>
-          <Mic className="mr-1 h-4 w-4" /> Grabar consulta
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-primary p-4 text-primary-foreground">
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-foreground/15">
+            <Sparkles className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-heading text-sm font-semibold">
+              Grabar consulta con IA
+            </p>
+            <p className="text-xs text-primary-foreground/80">
+              Transcribe y sintetiza automáticamente la consulta en notas
+              médicas estructuradas.
+            </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          onClick={start}
+          className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+        >
+          <Mic className="mr-1 size-4" /> Grabar consulta
         </Button>
-        <p className="text-xs text-muted-foreground">
-          Graba la consulta completa; al terminar, la IA llenará el expediente
-          con lo conversado. Informa a la persona que la sesión será grabada.
-        </p>
       </div>
     );
 
