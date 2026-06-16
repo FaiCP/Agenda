@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Crown, ShieldCheck, CalendarCheck } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Crown,
+  ShieldCheck,
+  CalendarCheck,
+  Pencil,
+} from "lucide-react";
 import {
   addProfessional,
+  updateMember,
   removeMember,
   type TeamActionState,
 } from "@/lib/actions/team";
@@ -22,11 +30,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 interface Member {
   id: string;
   role: string;
   name: string;
+  fullName: string;
+  displayName: string;
   acceptsAppointments: boolean;
   isSelf: boolean;
 }
@@ -60,6 +71,7 @@ export function EquipoView({
   planName: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Member | null>(null);
   const atLimit = used >= limit;
   const remaining = Math.max(0, limit - used);
   const pct = limit > 0 ? Math.round((used / limit) * 100) : 0;
@@ -134,6 +146,14 @@ export function EquipoView({
                     >
                       {ROLE_LABEL[m.role] ?? m.role}
                     </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Editar miembro"
+                      onClick={() => setEditing(m)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
                     {m.role !== "owner" && !m.isSelf && (
                       <Button
                         variant="ghost"
@@ -234,6 +254,27 @@ export function EquipoView({
           <AddForm onDone={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar miembro</DialogTitle>
+            <DialogDescription>
+              Actualiza el nombre y cómo aparece en la agenda y reservas.
+            </DialogDescription>
+          </DialogHeader>
+          {editing && (
+            <EditForm
+              key={editing.id}
+              member={editing}
+              onDone={() => setEditing(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -257,6 +298,61 @@ function RoleInfo({
         <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
     </div>
+  );
+}
+
+function EditForm({
+  member,
+  onDone,
+}: {
+  member: Member;
+  onDone: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(
+    updateMember,
+    initialState
+  );
+
+  useEffect(() => {
+    if (state.success) {
+      toast.success("Cambios guardados");
+      onDone();
+    }
+  }, [state, onDone]);
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <input type="hidden" name="member_id" value={member.id} />
+      <div className="space-y-2">
+        <Label htmlFor="edit_full_name">Nombre completo</Label>
+        <Input
+          id="edit_full_name"
+          name="full_name"
+          required
+          defaultValue={member.fullName}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="edit_display_name">Nombre para mostrar (opcional)</Label>
+        <Input
+          id="edit_display_name"
+          name="display_name"
+          placeholder="Cómo aparece en la agenda y reservas"
+          defaultValue={member.displayName}
+        />
+      </div>
+      <label className="flex items-center gap-3 rounded-lg border p-3">
+        <Switch
+          name="accepts_appointments"
+          defaultChecked={member.acceptsAppointments}
+        />
+        <span className="text-sm">Atiende citas (aparece en la agenda)</span>
+      </label>
+      {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+      <Button type="submit" className="w-full" disabled={pending}>
+        {pending ? "Guardando…" : "Guardar cambios"}
+      </Button>
+    </form>
   );
 }
 

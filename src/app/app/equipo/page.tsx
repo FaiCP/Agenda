@@ -53,6 +53,8 @@ export default async function EquipoPage() {
     id: m.id,
     role: m.role,
     name: m.display_name || m.profiles?.full_name || "Sin nombre",
+    fullName: m.profiles?.full_name || "",
+    displayName: m.display_name || "",
     acceptsAppointments: m.accepts_appointments,
     isSelf: m.profile_id === userId,
   }));

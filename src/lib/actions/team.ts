@@ -99,6 +99,68 @@ export async function addProfessional(
   return { error: null, success: true };
 }
 
+/** Edita los datos de un miembro (incluido el dueño): nombre real, nombre
+ * visible en agenda/reservas y si atiende citas. */
+export async function updateMember(
+  _prev: TeamActionState,
+  formData: FormData
+): Promise<TeamActionState> {
+  const { organization, role } = await getOrgContext();
+  if (role !== "owner")
+    return { error: "Solo el dueño puede gestionar el equipo." };
+
+  const memberId = String(formData.get("member_id") ?? "");
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const displayName = String(formData.get("display_name") ?? "").trim();
+  const accepts = formData.get("accepts_appointments") === "on";
+
+  if (fullName.length < 3)
+    return { error: "El nombre debe tener al menos 3 caracteres." };
+
+  const admin = createAdminClient();
+
+  const { data: member } = await admin
+    .from("organization_members")
+    .select("id, profile_id, accepts_appointments")
+    .eq("id", memberId)
+    .eq("organization_id", organization.id)
+    .maybeSingle();
+  if (!member) return { error: "Miembro no encontrado." };
+
+  // Si se activa "atiende citas" y antes no lo hacía, valida el límite del plan.
+  if (accepts && !member.accepts_appointments) {
+    const [used, limit] = await Promise.all([
+      professionalCount(organization.id),
+      professionalLimit(organization.id),
+    ]);
+    if (used >= limit)
+      return {
+        error: `Tu plan permite ${limit} profesional${limit === 1 ? "" : "es"}. Mejora tu plan para activar más.`,
+      };
+  }
+
+  const { error: profErr } = await admin
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", member.profile_id);
+  if (profErr) return { error: "No se pudo actualizar el nombre." };
+
+  const { error: memErr } = await admin
+    .from("organization_members")
+    .update({
+      display_name: displayName || null,
+      accepts_appointments: accepts,
+    })
+    .eq("id", memberId)
+    .eq("organization_id", organization.id);
+  if (memErr) return { error: "No se pudieron guardar los cambios." };
+
+  revalidatePath("/app/equipo");
+  revalidatePath("/app");
+  revalidatePath("/app/disponibilidad");
+  return { error: null, success: true };
+}
+
 /** Quita un profesional del equipo. Conserva su cuenta para no romper el
  * historial de citas; deja de aparecer en la agenda y reservas. */
 export async function removeMember(memberId: string): Promise<TeamActionState> {

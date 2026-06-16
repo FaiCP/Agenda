@@ -31,6 +31,9 @@ const PLATFORM_GUIDE: Record<(typeof PLATFORMS)[number], string> = {
     "Estado de WhatsApp: mensaje breve y directo (2-4 líneas), sin hashtags (lista vacía), con invitación a escribir o agendar.",
 };
 
+const VIDEO_GUIDE =
+  "Caption para VIDEO corto (Reel / Historia / TikTok): MUY breve y directo. El campo \"caption\" debe tener 1-2 líneas (máximo ~150 caracteres en total), un gancho fuerte en la primera línea, máximo 1-2 emojis y un llamado a la acción corto al final. NO escribas párrafos largos. 3-5 hashtags. En \"imageIdea\" describe escenas del video (tomas, texto en pantalla).";
+
 const GOAL_GUIDE: Record<(typeof GOALS)[number], string> = {
   atraer: "Atraer clientes nuevos: presenta el servicio y su beneficio principal.",
   promocion: "Promoción u oferta: destaca la promoción indicada con urgencia amable.",
@@ -44,6 +47,7 @@ export async function generateSocialPosts(input: {
   platform: string;
   goal: string;
   topic: string;
+  medium?: "text" | "video";
 }): Promise<SocialPostsResult> {
   const { organization } = await getOrgContext();
 
@@ -55,6 +59,9 @@ export async function generateSocialPosts(input: {
   const platform = PLATFORMS.find((p) => p === input.platform);
   const goal = GOALS.find((g) => g === input.goal);
   if (!platform || !goal) return { error: "Selección no válida." };
+
+  const isVideo = input.medium === "video";
+  const formatGuide = isVideo ? VIDEO_GUIDE : PLATFORM_GUIDE[platform];
 
   const supabase = await createClient();
   const { data: services } = await supabase
@@ -77,7 +84,7 @@ Responde SOLO con un objeto JSON válido (sin bloques de código) con esta forma
 
 Reglas:
 - Exactamente 3 publicaciones, con enfoques distintos entre sí.
-- ${PLATFORM_GUIDE[platform]}
+- ${formatGuide}
 - ${GOAL_GUIDE[goal]}
 - "imageIdea": descripción en 1-2 frases de la foto/imagen (o video en TikTok) que acompaña al post, realizable con un celular en el local.
 - Menciona el nombre del negocio cuando aporte; nunca inventes precios ni promociones no indicadas.

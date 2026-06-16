@@ -103,6 +103,7 @@ export function MediaStudio() {
       platform: "instagram",
       goal: "atraer",
       topic,
+      medium: "video",
     });
     setAiLoading(false);
     if (res.error || !res.posts?.length) {
