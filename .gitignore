@@ -40,3 +40,10 @@ dev.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# diagnostico / auditorias generadas (unlighthouse, lighthouse)
+/diagnosticoweeb/
+.unlighthouse/
+
+# capturas de pantalla sueltas
+/Captura*.png
