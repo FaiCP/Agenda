@@ -18,6 +18,7 @@ import {
   updateAppointmentStatus,
   type ActionState,
 } from "@/lib/actions/appointments";
+import { sendManualReminder } from "@/lib/actions/whatsapp";
 import { APPOINTMENT_STATUS_LABELS } from "@/lib/verticals";
 import { formatTime } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
@@ -113,6 +114,12 @@ export function AgendaView({
     );
     if (result.error) toast.error(result.error);
     else toast.success("Cita actualizada");
+  }
+
+  async function sendReminder(id: string) {
+    const result = await sendManualReminder(id);
+    if (result.error) toast.error(result.error);
+    else toast.success("Recordatorio enviado por WhatsApp");
   }
 
   return (
@@ -249,6 +256,9 @@ export function AgendaView({
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setRescheduleId(a.id)}>
                             Reagendar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => sendReminder(a.id)}>
+                            Enviar recordatorio (WhatsApp)
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive"

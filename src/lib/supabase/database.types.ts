@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      whatsapp_connections: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          last_qr_at: string | null
+          organization_id: string
+          phone: string | null
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          last_qr_at?: string | null
+          organization_id: string
+          phone?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          last_qr_at?: string | null
+          organization_id?: string
+          phone?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           cancellation_reason: string | null
@@ -25,6 +66,7 @@ export type Database = {
           organization_id: string
           origin: Database["public"]["Enums"]["appointment_origin"]
           professional_id: string
+          reminder_sent_at: string | null
           service_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["appointment_status"]
@@ -39,6 +81,7 @@ export type Database = {
           organization_id: string
           origin?: Database["public"]["Enums"]["appointment_origin"]
           professional_id: string
+          reminder_sent_at?: string | null
           service_id?: string | null
           starts_at: string
           status?: Database["public"]["Enums"]["appointment_status"]
@@ -53,6 +96,7 @@ export type Database = {
           organization_id?: string
           origin?: Database["public"]["Enums"]["appointment_origin"]
           professional_id?: string
+          reminder_sent_at?: string | null
           service_id?: string | null
           starts_at?: string
           status?: Database["public"]["Enums"]["appointment_status"]

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { notifyPublicBooking } from "@/lib/actions/appointments";
 import { todayInEcuador } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,6 +119,17 @@ export function BookingFlow({
       loadSlots();
       return;
     }
+
+    // Confirmación por WhatsApp (best-effort, no bloquea la confirmación visual)
+    const bookedService = info.services.find((s) => s.id === serviceId);
+    void notifyPublicBooking({
+      slug,
+      clientName: String(form.get("name") ?? ""),
+      phone: String(form.get("phone") ?? ""),
+      serviceName: bookedService?.name ?? "tu servicio",
+      startsAt: selectedSlot.starts_at,
+    });
+
     setConfirmed(selectedSlot);
   }
 

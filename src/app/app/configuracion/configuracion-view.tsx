@@ -12,15 +12,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { WhatsappCard } from "./whatsapp-card";
 
 const initialState: ActionState = { error: null };
+
+type WaStatus = "connected" | "connecting" | "disconnected" | "failed";
 
 export function ConfiguracionView({
   organization,
   isOwner,
+  whatsapp,
 }: {
   organization: Tables<"organizations">;
   isOwner: boolean;
+  whatsapp: {
+    status: WaStatus;
+    phone: string | null;
+    configured: boolean;
+  };
 }) {
   const [state, formAction, pending] = useActionState(
     updateOrganization,
@@ -144,6 +153,13 @@ export function ConfiguracionView({
           </form>
         </CardContent>
       </Card>
+
+      <WhatsappCard
+        initialStatus={whatsapp.status}
+        initialPhone={whatsapp.phone}
+        isOwner={isOwner}
+        configured={whatsapp.configured}
+      />
     </div>
   );
 }
