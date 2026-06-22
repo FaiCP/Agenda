@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Copy, Link2 } from "lucide-react";
 import { updateOrganization } from "@/lib/actions/settings";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { WhatsappCard } from "./whatsapp-card";
+import { BrandingEditor } from "./branding-editor";
 
 const initialState: ActionState = { error: null };
 
@@ -40,10 +41,11 @@ export function ConfiguracionView({
     if (state.success) toast.success("Configuración guardada");
   }, [state]);
 
-  const bookingUrl =
-    typeof window === "undefined"
-      ? `/reservar/${organization.slug}`
-      : `${window.location.origin}/reservar/${organization.slug}`;
+  // Construye la URL absoluta solo tras montar para no desincronizar SSR vs
+  // cliente (hydration). En el primer render (server y cliente) es relativa.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const bookingUrl = `${origin}/reservar/${organization.slug}`;
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -153,6 +155,10 @@ export function ConfiguracionView({
           </form>
         </CardContent>
       </Card>
+
+      {isOwner && (
+        <BrandingEditor organization={organization} bookingUrl={bookingUrl} />
+      )}
 
       <WhatsappCard
         initialStatus={whatsapp.status}

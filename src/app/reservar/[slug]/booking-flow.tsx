@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import type { Json } from "@/lib/supabase/database.types";
 
 export interface BookingInfo {
   organization: {
@@ -29,6 +30,8 @@ export interface BookingInfo {
     description: string | null;
     phone: string | null;
     address: string | null;
+    logo_url: string | null;
+    branding: Json;
   };
   services: {
     id: string;

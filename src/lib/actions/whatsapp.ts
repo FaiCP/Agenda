@@ -9,6 +9,7 @@ import {
   getQr,
   getStatus,
   deleteSession,
+  registerWebhook,
   orgSessionName,
   whatsappConfigured,
   type GatewayStatus,
@@ -65,6 +66,16 @@ export async function startWhatsappConnection(): Promise<{ error: string | null 
     console.error("[whatsapp connect]", e);
     const detail = e instanceof Error ? e.message : String(e);
     return { error: `Gateway: ${detail}` };
+  }
+
+  // Registrar webhook de mensajes entrantes (best-effort).
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const hookSecret = process.env.WHATSAPP_WEBHOOK_SECRET;
+  if (appUrl && hookSecret) {
+    await registerWebhook(
+      uuid,
+      `${appUrl.replace(/\/$/, "")}/api/webhooks/whatsapp?token=${hookSecret}`
+    );
   }
 
   const supabase = await createClient();

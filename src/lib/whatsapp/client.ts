@@ -218,6 +218,33 @@ export async function sendText(
   return res.ok;
 }
 
+/**
+ * Registra (idempotente) un webhook de mensajes entrantes para la sesión.
+ * OpenWA enviará POST a `url` en cada evento "message.received".
+ */
+export async function registerWebhook(
+  sessionId: string,
+  url: string
+): Promise<boolean> {
+  try {
+    const res = await api(
+      `/api/sessions/${encodeURIComponent(sessionId)}/webhooks`,
+      {
+        method: "POST",
+        // OJO: en esta versión de OpenWA, mandar `events`/`secret` da 400.
+        // Con solo `url`, el gateway usa events=["message.received"] por defecto.
+        // El `secret` lo pasamos en el query (?token=) de la propia URL.
+        body: JSON.stringify({ url }),
+      }
+    );
+    // 200/201 creado; 409 ya existe -> ok
+    return res.ok || res.status === 409;
+  } catch (e) {
+    console.error("[whatsapp registerWebhook]", e);
+    return false;
+  }
+}
+
 /** Cierra y elimina la sesión en el gateway (desvincula el número). */
 export async function deleteSession(sessionId: string): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}`, {

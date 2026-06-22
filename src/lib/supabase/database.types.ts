@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      whatsapp_conversations: {
+        Row: {
+          chat_id: string
+          created_at: string
+          organization_id: string
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          organization_id: string
+          state?: Json
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          organization_id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_connections: {
         Row: {
           connected_at: string | null
@@ -435,6 +467,7 @@ export type Database = {
         Row: {
           address: string | null
           booking_enabled: boolean
+          branding: Json
           client_label: string
           created_at: string
           currency: string
@@ -450,6 +483,7 @@ export type Database = {
         Insert: {
           address?: string | null
           booking_enabled?: boolean
+          branding?: Json
           client_label?: string
           created_at?: string
           currency?: string
@@ -465,6 +499,7 @@ export type Database = {
         Update: {
           address?: string | null
           booking_enabled?: boolean
+          branding?: Json
           client_label?: string
           created_at?: string
           currency?: string
@@ -970,6 +1005,7 @@ export type Database = {
         Returns: {
           address: string | null
           booking_enabled: boolean
+          branding: Json
           client_label: string
           created_at: string
           currency: string
@@ -1017,7 +1053,7 @@ export type Database = {
       is_superadmin: { Args: never; Returns: boolean }
     }
     Enums: {
-      appointment_origin: "internal" | "public"
+      appointment_origin: "internal" | "public" | "whatsapp"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -1173,7 +1209,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      appointment_origin: ["internal", "public"],
+      appointment_origin: ["internal", "public", "whatsapp"],
       appointment_status: [
         "pending",
         "confirmed",
