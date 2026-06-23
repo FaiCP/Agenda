@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getOrgContext } from "@/lib/get-org";
 import { orgHasFeature, orgFeatureNumber } from "@/lib/features";
+import { extFromImageMime } from "@/lib/security";
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
 
@@ -10,7 +11,7 @@ const FORMATS = ["reel", "post", "story"] as const;
 type Format = (typeof FORMATS)[number];
 
 const MAX_PHOTOS = 5;
-const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const SIGNED_URL_TTL = 3600; // 1h: Creatomate descarga las fotos durante el render
 const CAPTION_MAX = 2200;
 
@@ -88,7 +89,7 @@ export async function createMediaRender(
   const sourcePaths: string[] = [];
   const signedUrls: string[] = [];
   for (let i = 0; i < photos.length; i++) {
-    const ext = photos[i].name.split(".").pop()?.toLowerCase() || "jpg";
+    const ext = extFromImageMime(photos[i].type);
     const path = `${organization.id}/${asset.id}/${i}.${ext}`;
     const up = await supabase.storage
       .from("marketing-uploads")

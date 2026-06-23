@@ -8,6 +8,7 @@ import {
   type FieldSpec,
 } from "@/lib/ai";
 import { orgHasFeature } from "@/lib/features";
+import { rateLimit } from "@/lib/security";
 import { VERTICALS } from "@/lib/verticals";
 
 export const maxDuration = 120;
@@ -38,6 +39,13 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "Tu plan no incluye funciones de IA. Mejora al plan Premium." },
       { status: 403 }
+    );
+
+  // Anti-abuso del modelo de pago (Groq/Anthropic): tope de llamadas por org.
+  if (!rateLimit(`transcribe:${membership.organization_id}`, 12, 5 * 60_000))
+    return NextResponse.json(
+      { error: "Demasiadas transcripciones seguidas. Espera unos minutos." },
+      { status: 429 }
     );
 
   if (!aiConfigured())

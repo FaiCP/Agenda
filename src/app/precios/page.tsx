@@ -18,19 +18,19 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "1 profesional",
     "Hasta 50 citas al mes",
     "Página pública de reservas",
-    "Expedientes ilimitados",
+    "Marketing IA: ideas de contenido (10/mes)",
   ],
   pro: [
     "Hasta 3 profesionales",
     "Citas ilimitadas",
-    "Página pública de reservas",
     "Recordatorios por correo",
+    "Marketing IA: guiones, calendario y reutilizar (50/mes)",
   ],
   premium: [
     "Hasta 10 profesionales",
-    "Citas ilimitadas",
-    "Recordatorios por correo",
-    "Funciones de IA (próximamente)",
+    "Todo lo de Pro",
+    "Marketing IA: campañas desde tu agenda (200/mes)",
+    "IA clínica: dictado, documentos y riesgo",
   ],
 };
 

@@ -12,6 +12,7 @@ import {
   type BackgroundType,
   type TemplateId,
 } from "@/lib/branding";
+import { extFromImageMime } from "@/lib/security";
 import type { Json } from "@/lib/supabase/database.types";
 import type { ActionState } from "./appointments";
 
@@ -36,7 +37,7 @@ async function uploadBrandingImage(
   file: File,
   kind: string
 ): Promise<{ url: string | null; error: string | null }> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const ext = extFromImageMime(file.type);
   const path = `${orgId}/branding/${kind}-${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from(BRANDING_BUCKET)

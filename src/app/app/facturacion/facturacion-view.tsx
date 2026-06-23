@@ -38,16 +38,27 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 const initialState: ActionState = { error: null };
 
 function planFeatures(plan: Plan): string[] {
-  const f = (plan.features ?? {}) as Record<string, boolean>;
+  const f = (plan.features ?? {}) as Record<string, unknown>;
   const list = [
     `${plan.max_professionals} ${plan.max_professionals === 1 ? "profesional" : "profesionales"}`,
     plan.max_appointments_per_month
       ? `${plan.max_appointments_per_month} citas / mes`
       : "Citas ilimitadas",
   ];
-  if (f.ai_features) list.push("Marketing avanzado con IA");
-  if (f.email_reminders) list.push("Recordatorios por correo");
   if (f.public_booking) list.push("Reservas online");
+  if (f.email_reminders) list.push("Recordatorios por correo");
+
+  // Marketing por niveles (acumulativo)
+  if (f.mkt_agenda)
+    list.push("Marketing IA: campañas desde tu agenda");
+  if (f.mkt_create)
+    list.push("Marketing IA: guiones, calendario y reutilizar");
+  if (f.mkt_ideas) list.push("Marketing IA: ideas de contenido");
+  if (typeof f.marketing_ai_monthly === "number")
+    list.push(`${f.marketing_ai_monthly} generaciones IA / mes`);
+
+  if (f.ai_features)
+    list.push("IA clínica: dictado por voz, documentos y análisis de riesgo");
   return list;
 }
 

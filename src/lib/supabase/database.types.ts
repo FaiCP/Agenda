@@ -14,79 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      whatsapp_conversations: {
-        Row: {
-          chat_id: string
-          created_at: string
-          organization_id: string
-          state: Json
-          updated_at: string
-        }
-        Insert: {
-          chat_id: string
-          created_at?: string
-          organization_id: string
-          state?: Json
-          updated_at?: string
-        }
-        Update: {
-          chat_id?: string
-          created_at?: string
-          organization_id?: string
-          state?: Json
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "whatsapp_conversations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      whatsapp_connections: {
-        Row: {
-          connected_at: string | null
-          created_at: string
-          last_qr_at: string | null
-          organization_id: string
-          phone: string | null
-          session_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          connected_at?: string | null
-          created_at?: string
-          last_qr_at?: string | null
-          organization_id: string
-          phone?: string | null
-          session_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          connected_at?: string | null
-          created_at?: string
-          last_qr_at?: string | null
-          organization_id?: string
-          phone?: string | null
-          session_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "whatsapp_connections_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: true
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       appointments: {
         Row: {
           cancellation_reason: string | null
@@ -345,6 +272,60 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_content: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          goal: string | null
+          id: string
+          kind: Database["public"]["Enums"]["marketing_kind"]
+          organization_id: string
+          payload: Json
+          platform: string | null
+          status: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          goal?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["marketing_kind"]
+          organization_id: string
+          payload?: Json
+          platform?: string | null
+          status?: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          goal?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["marketing_kind"]
+          organization_id?: string
+          payload?: Json
+          platform?: string | null
+          status?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_content_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_content_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -959,7 +940,7 @@ export type Database = {
           {
             foreignKeyName: "subscriptions_organization_id_fkey"
             columns: ["organization_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -972,6 +953,79 @@ export type Database = {
           },
         ]
       }
+      whatsapp_connections: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          last_qr_at: string | null
+          organization_id: string
+          phone: string | null
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          last_qr_at?: string | null
+          organization_id: string
+          phone?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          last_qr_at?: string | null
+          organization_id?: string
+          phone?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_conversations: {
+        Row: {
+          chat_id: string
+          created_at: string
+          organization_id: string
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          organization_id: string
+          state?: Json
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          organization_id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -980,17 +1034,17 @@ export type Database = {
       client_risk_stats: {
         Args: { p_organization_id: string }
         Returns: {
+          cancelled: number
           client_id: string
-          full_name: string
-          phone: string | null
-          email: string | null
           client_since: string
           completed: number
+          email: string
+          first_visit: string
+          full_name: string
+          last_visit: string
+          next_appointment: string
           no_shows: number
-          cancelled: number
-          first_visit: string | null
-          last_visit: string | null
-          next_appointment: string | null
+          phone: string
         }[]
       }
       create_organization: {
@@ -1038,6 +1092,7 @@ export type Database = {
         }
         Returns: Json
       }
+      expire_trials: { Args: never; Returns: number }
       get_available_slots: {
         Args: {
           org_slug: string
@@ -1068,6 +1123,13 @@ export type Database = {
         | "select"
         | "multiselect"
         | "boolean"
+      marketing_kind:
+        | "script"
+        | "idea_batch"
+        | "post"
+        | "campaign"
+        | "calendar"
+        | "repurpose"
       media_format: "reel" | "post" | "story"
       media_status: "pending" | "rendering" | "ready" | "failed"
       member_role: "owner" | "professional" | "receptionist"
@@ -1091,7 +1153,7 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals["public"]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -1225,6 +1287,14 @@ export const Constants = {
         "select",
         "multiselect",
         "boolean",
+      ],
+      marketing_kind: [
+        "script",
+        "idea_batch",
+        "post",
+        "campaign",
+        "calendar",
+        "repurpose",
       ],
       media_format: ["reel", "post", "story"],
       media_status: ["pending", "rendering", "ready", "failed"],

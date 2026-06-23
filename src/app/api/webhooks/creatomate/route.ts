@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { timingSafeEqualStr } from "@/lib/security";
 
 // Descargar el MP4 de Creatomate y subirlo a Storage puede tardar unos segundos.
 export const maxDuration = 60;
+
+const MAX_MP4_BYTES = 60 * 1024 * 1024; // tope de seguridad para el render
 
 interface CreatomateWebhook {
   id: string;
@@ -10,9 +13,27 @@ interface CreatomateWebhook {
   url?: string;
 }
 
+/** Solo aceptamos descargar MP4 desde dominios de Creatomate (anti-SSRF). */
+function isCreatomateUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return (
+      u.protocol === "https:" &&
+      (u.hostname === "creatomate.com" || u.hostname.endsWith(".creatomate.com"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   const url = new URL(req.url);
-  if (url.searchParams.get("token") !== process.env.CREATOMATE_WEBHOOK_SECRET)
+  if (
+    !timingSafeEqualStr(
+      url.searchParams.get("token"),
+      process.env.CREATOMATE_WEBHOOK_SECRET
+    )
+  )
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   let body: CreatomateWebhook;
@@ -38,9 +59,15 @@ export async function POST(req: Request) {
 
   if (body.status === "succeeded" && body.url) {
     try {
+      if (!isCreatomateUrl(body.url))
+        throw new Error("url no permitida");
       const mp4 = await fetch(body.url);
       if (!mp4.ok) throw new Error(`fetch mp4 ${mp4.status}`);
+      const declared = Number(mp4.headers.get("content-length") ?? 0);
+      if (declared > MAX_MP4_BYTES) throw new Error("mp4 demasiado grande");
       const buffer = Buffer.from(await mp4.arrayBuffer());
+      if (buffer.byteLength > MAX_MP4_BYTES)
+        throw new Error("mp4 demasiado grande");
       const path = `${asset.organization_id}/${asset.id}.mp4`;
 
       const up = await supabase.storage

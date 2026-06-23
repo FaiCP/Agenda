@@ -46,10 +46,14 @@ export default async function AdminPage() {
     })
   );
 
+  // `subscriptions` es relación uno-a-uno (objeto), pero AdminView la consume
+  // como arreglo; normalizamos para mantener esa forma.
+  const orgs = (organizations.data ?? []).map((o) => ({
+    ...o,
+    subscriptions: o.subscriptions ? [o.subscriptions] : [],
+  }));
+
   return (
-    <AdminView
-      organizations={organizations.data ?? []}
-      pendingPayments={paymentsWithUrls}
-    />
+    <AdminView organizations={orgs} pendingPayments={paymentsWithUrls} />
   );
 }

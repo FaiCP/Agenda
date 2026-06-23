@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWhatsapp, formatWhen, msgReminder } from "@/lib/whatsapp/notify";
+import { timingSafeEqualStr } from "@/lib/security";
 
 // Envío de recordatorios puede tardar si hay muchas citas.
 export const maxDuration = 60;
@@ -18,8 +19,9 @@ export async function GET(req: Request) {
   // (cron nativo de Vercel).
   const url = new URL(req.url);
   const secret = process.env.CRON_SECRET;
-  const tokenOk = url.searchParams.get("token") === secret;
-  const headerOk = req.headers.get("authorization") === `Bearer ${secret}`;
+  const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  const tokenOk = timingSafeEqualStr(url.searchParams.get("token"), secret);
+  const headerOk = timingSafeEqualStr(bearer, secret);
   if (!secret || (!tokenOk && !headerOk))
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

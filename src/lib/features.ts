@@ -1,6 +1,40 @@
 import { createClient } from "@/lib/supabase/server";
 
-export type PlanFeature = "ai_features" | "email_reminders" | "public_booking";
+export type PlanFeature =
+  | "ai_features"
+  | "email_reminders"
+  | "public_booking"
+  | "mkt_ideas"
+  | "mkt_create"
+  | "mkt_agenda";
+
+export interface MarketingCaps {
+  ideas: boolean;
+  create: boolean;
+  agenda: boolean;
+}
+
+/** Capacidades de marketing del plan activo, para gatear pestañas en la UI. */
+export async function orgMarketingCaps(
+  organizationId: string
+): Promise<MarketingCaps> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("status, plans(features)")
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  const features =
+    data && data.status === "active"
+      ? ((data.plans?.features ?? {}) as Record<string, unknown>)
+      : {};
+  return {
+    ideas: features.mkt_ideas === true,
+    create: features.mkt_create === true,
+    agenda: features.mkt_agenda === true,
+  };
+}
 
 /**
  * Indica si la suscripción activa de la organización incluye una feature.
