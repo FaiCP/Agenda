@@ -46,6 +46,7 @@ function planFeatures(plan: Plan): string[] {
       : "Citas ilimitadas",
   ];
   if (f.public_booking) list.push("Reservas online");
+  if (f.whatsapp_bot) list.push("Bot de WhatsApp (recepcionista que agenda)");
   if (f.email_reminders) list.push("Recordatorios por correo");
 
   // Marketing por niveles (acumulativo)
@@ -92,7 +93,7 @@ export function FacturacionView({
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => {
           const isCurrent = currentPlan?.id === plan.id;
           const isPaid = Number(plan.price_monthly) > 0;

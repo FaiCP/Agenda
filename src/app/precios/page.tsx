@@ -16,12 +16,18 @@ export const metadata: Metadata = { title: "Precios" };
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [
     "1 profesional",
-    "Hasta 50 citas al mes",
+    "Hasta 20 citas al mes",
+    "Página pública de reservas",
+  ],
+  inicial: [
+    "1 profesional",
+    "Bot de WhatsApp: recepcionista que agenda sola",
     "Página pública de reservas",
     "Marketing IA: ideas de contenido (10/mes)",
   ],
   pro: [
     "Hasta 3 profesionales",
+    "Bot de WhatsApp",
     "Citas ilimitadas",
     "Recordatorios por correo",
     "Marketing IA: guiones, calendario y reutilizar (50/mes)",
@@ -55,14 +61,15 @@ export default async function PreciosPage() {
           </Button>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl px-4 py-16">
+      <main className="mx-auto w-full max-w-6xl px-4 py-16">
         <h1 className="text-center text-3xl font-bold">
           Planes simples, en dólares
         </h1>
         <p className="mt-2 text-center text-muted-foreground">
-          Paga por transferencia bancaria. Sin contratos ni sorpresas.
+          Empieza con 1 mes de prueba Premium gratis. Paga por transferencia
+          bancaria. Sin contratos ni sorpresas.
         </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {(plans ?? []).map((plan) => (
             <Card
               key={plan.id}

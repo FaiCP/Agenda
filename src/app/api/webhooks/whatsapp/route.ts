@@ -80,6 +80,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // Gate por plan: el bot solo responde si la suscripción activa incluye
+  // "whatsapp_bot" (Inicial+). Protege contra orgs degradadas a Gratis.
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("status, plans(features)")
+    .eq("organization_id", conn.organization_id)
+    .maybeSingle();
+  const botEnabled =
+    sub?.status === "active" &&
+    (sub.plans?.features as Record<string, unknown> | null)?.whatsapp_bot ===
+      true;
+  if (!botEnabled) {
+    return NextResponse.json({ ok: true });
+  }
+
   // Anti-abuso: limita cuántos mensajes procesa el bot (LLM = coste) por chat.
   if (!rateLimit(`wa:${conn.organization_id}:${msg.chatId}`, 12, 60_000)) {
     return NextResponse.json({ ok: true });

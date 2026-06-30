@@ -4,6 +4,7 @@ export type PlanFeature =
   | "ai_features"
   | "email_reminders"
   | "public_booking"
+  | "whatsapp_bot"
   | "mkt_ideas"
   | "mkt_create"
   | "mkt_agenda";

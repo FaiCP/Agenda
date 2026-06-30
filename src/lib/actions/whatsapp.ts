@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOrgContext } from "@/lib/get-org";
+import { orgHasFeature } from "@/lib/features";
 import {
   ensureSession,
   resolveSessionId,
@@ -55,6 +56,11 @@ export async function startWhatsappConnection(): Promise<{ error: string | null 
   const { organization, role } = await getOrgContext();
   if (role !== "owner")
     return { error: "Solo el propietario puede conectar WhatsApp." };
+  if (!(await orgHasFeature(organization.id, "whatsapp_bot")))
+    return {
+      error:
+        "El bot de WhatsApp está disponible desde el plan Inicial. Mejora tu plan para conectarlo.",
+    };
   if (!whatsappConfigured())
     return { error: "El gateway de WhatsApp no está configurado." };
 
